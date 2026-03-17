@@ -2,11 +2,13 @@
 
 import { useState, FormEvent } from 'react';
 import { CreateReservationInput, ReservationStatus } from '@/types/reservation';
+import { BarSettings } from '@/types/settings';
 import { Button } from '@/components/ui/Button';
-import { todayString } from '@/lib/utils/date';
+import { todayString, generateTimeSlots } from '@/lib/utils/date';
 
 interface ReservationFormProps {
   defaultDate?: string;
+  settings?: BarSettings;
   onSubmit: (input: CreateReservationInput) => Promise<void>;
 }
 
@@ -17,14 +19,28 @@ const EMPTY = { name: '', guests: '', time: '', date: '', phone: '', notes: '' }
 const INPUT_CLASS =
   'w-full min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
 
-export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps) {
+// Default schedule used when no settings are available
+const DEFAULT_OPENING = '13:00';
+const DEFAULT_CLOSING = '23:30';
+const DEFAULT_INTERVAL = 30;
+
+export function ReservationForm({ defaultDate, settings, onSubmit }: ReservationFormProps) {
+  const defaultStatus = settings?.defaultReservationStatus ?? 'confirmed';
+
   const [fields, setFields] = useState({ ...EMPTY, date: defaultDate ?? todayString() });
-  const [status, setStatus] = useState<ReservationStatus>('confirmed');
+  const [status, setStatus] = useState<ReservationStatus>(defaultStatus);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  // Generate time slots from settings
+  const timeSlots = generateTimeSlots(
+    settings?.openingTime ?? DEFAULT_OPENING,
+    settings?.closingTime ?? DEFAULT_CLOSING,
+    settings?.reservationInterval ?? DEFAULT_INTERVAL,
+  );
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError('');
   }
@@ -49,7 +65,7 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
         status,
       });
       setFields({ ...EMPTY, date: fields.date });
-      setStatus('confirmed');
+      setStatus(defaultStatus);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2500);
     } catch {
@@ -73,8 +89,13 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
           <Field label="Fecha *">
             <input name="date" type="date" value={fields.date} onChange={handleChange} className={INPUT_CLASS} />
           </Field>
-          <Field label="Hora *">
-            <input name="time" type="time" value={fields.time} onChange={handleChange} className={INPUT_CLASS} />
+          <Field label={`Hora * (${settings?.openingTime ?? DEFAULT_OPENING}–${settings?.closingTime ?? DEFAULT_CLOSING})`}>
+            <select name="time" value={fields.time} onChange={handleChange} className={INPUT_CLASS}>
+              <option value="">Selecciona hora</option>
+              {timeSlots.map((slot) => (
+                <option key={slot} value={slot}>{slot}</option>
+              ))}
+            </select>
           </Field>
         </div>
 

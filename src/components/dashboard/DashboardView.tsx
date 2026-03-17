@@ -3,17 +3,21 @@
 import { useState } from 'react';
 import { useReservations } from '@/hooks/useReservations';
 import { useTheme } from '@/hooks/useTheme';
+import { useBarSettings } from '@/hooks/useBarSettings';
 import { Header } from './Header';
 import { SummaryPanel } from './SummaryPanel';
 import { ReservationCalendar } from '@/components/calendar/ReservationCalendar';
 import { ReservationForm } from '@/components/reservations/ReservationForm';
 import { ReservationList } from '@/components/reservations/ReservationList';
 import { Modal } from '@/components/ui/Modal';
+import { SettingsModal } from '@/components/settings/SettingsModal';
 import { formatShortDate, isToday } from '@/lib/utils/date';
 
 export function DashboardView() {
   const { isDark, toggle: toggleTheme } = useTheme();
+  const { settings, updateSettings } = useBarSettings();
   const [addOpen, setAddOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false); // mobile collapsible
 
   const {
@@ -46,8 +50,10 @@ export function DashboardView() {
       <Header
         selectedDate={selectedDate}
         isDark={isDark}
+        businessName={settings?.businessName}
         onToggleTheme={toggleTheme}
         onAddReservation={() => setAddOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-4 pb-24 sm:pb-6">
@@ -84,7 +90,11 @@ export function DashboardView() {
 
                 {statsOpen && (
                   <div className="mt-2 space-y-3">
-                    <SummaryPanel summary={summary} dateLabel={summaryDateLabel} />
+                    <SummaryPanel
+                      summary={summary}
+                      dateLabel={summaryDateLabel}
+                      maxCapacity={settings?.maxCapacity}
+                    />
                   </div>
                 )}
               </div>
@@ -102,7 +112,11 @@ export function DashboardView() {
 
             {/* ── SIDEBAR (desktop only) ── */}
             <div className="hidden lg:flex lg:flex-col lg:gap-4">
-              <SummaryPanel summary={summary} dateLabel={summaryDateLabel} />
+              <SummaryPanel
+                summary={summary}
+                dateLabel={summaryDateLabel}
+                maxCapacity={settings?.maxCapacity}
+              />
               <AllTimeStats reservations={allReservations} />
             </div>
           </div>
@@ -130,8 +144,24 @@ export function DashboardView() {
 
       {/* ── New reservation modal (mobile sheet + desktop dialog) ── */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Nueva Reserva">
-        <ReservationForm defaultDate={selectedDate} onSubmit={handleAdd} />
+        <ReservationForm
+          defaultDate={selectedDate}
+          settings={settings ?? undefined}
+          onSubmit={handleAdd}
+        />
       </Modal>
+
+      {/* ── Settings modal ── */}
+      {settings && (
+        <SettingsModal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          settings={settings}
+          onSave={updateSettings}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />
+      )}
     </div>
   );
 }

@@ -95,6 +95,30 @@ export function isToday(dateStr: string): boolean {
 }
 
 /**
+ * Generate available time slots between openingTime and closingTime
+ * with the given interval in minutes.
+ * Both times are "HH:MM" strings. Returns ["HH:MM", ...].
+ */
+export function generateTimeSlots(
+  openingTime: string,
+  closingTime: string,
+  intervalMinutes: number,
+): string[] {
+  const [openH, openM] = openingTime.split(':').map(Number);
+  const [closeH, closeM] = closingTime.split(':').map(Number);
+  const openTotal = openH * 60 + openM;
+  const closeTotal = closeH * 60 + closeM;
+
+  const slots: string[] = [];
+  for (let t = openTotal; t <= closeTotal; t += intervalMinutes) {
+    const h = Math.floor(t / 60);
+    const m = t % 60;
+    slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+  }
+  return slots;
+}
+
+/**
  * Sort reservations ascending by date, then by time within the same date.
  *
  * Both `date` ("YYYY-MM-DD") and `time` ("HH:MM") are zero-padded ISO

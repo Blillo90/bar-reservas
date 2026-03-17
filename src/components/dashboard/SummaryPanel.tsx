@@ -25,9 +25,17 @@ function StatRow({ label, value, sub, colorClass }: StatRowProps) {
 interface SummaryPanelProps {
   summary: ReservationSummary;
   dateLabel: string;
+  maxCapacity?: number;
 }
 
-export function SummaryPanel({ summary, dateLabel }: SummaryPanelProps) {
+export function SummaryPanel({ summary, dateLabel, maxCapacity }: SummaryPanelProps) {
+  const isOverCapacity = maxCapacity != null && summary.totalGuests > maxCapacity;
+  const isNearCapacity =
+    !isOverCapacity &&
+    maxCapacity != null &&
+    maxCapacity > 0 &&
+    summary.totalGuests / maxCapacity >= 0.8;
+
   return (
     <Card>
       <CardHeader>
@@ -57,6 +65,23 @@ export function SummaryPanel({ summary, dateLabel }: SummaryPanelProps) {
           <StatRow label="Canceladas" value={summary.cancelled} colorClass="text-rose-500 dark:text-rose-400" />
         )}
       </CardBody>
+
+      {/* Capacity warning */}
+      {maxCapacity != null && (isOverCapacity || isNearCapacity) && (
+        <div className={`mx-4 mb-3 px-3 py-2 rounded-lg border text-xs font-medium flex items-start gap-2 ${
+          isOverCapacity
+            ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400'
+            : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400'
+        }`}>
+          <span className="shrink-0 mt-px">{isOverCapacity ? '⚠️' : '📊'}</span>
+          <span>
+            {isOverCapacity
+              ? `Capacidad superada: ${summary.totalGuests} pax de ${maxCapacity} máx.`
+              : `Casi lleno: ${summary.totalGuests} de ${maxCapacity} pax (${Math.round((summary.totalGuests / maxCapacity) * 100)}%)`
+            }
+          </span>
+        </div>
+      )}
 
       {/* Distribution bar */}
       {summary.total > 0 && (
