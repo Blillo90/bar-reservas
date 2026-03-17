@@ -94,7 +94,16 @@ export function isToday(dateStr: string): boolean {
   return dateStr === todayString();
 }
 
-/** Sort comparator for reservations by time */
-export function compareByTime(a: string, b: string): number {
-  return a.localeCompare(b);
+/**
+ * Sort reservations ascending by date, then by time within the same date.
+ *
+ * Both `date` ("YYYY-MM-DD") and `time` ("HH:MM") are zero-padded ISO
+ * substrings — plain lexicographic comparison is correct and fast.
+ * No Date parsing needed.
+ */
+export function sortByDateTime<T extends { date: string; time: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const dateCmp = a.date.localeCompare(b.date);
+    return dateCmp !== 0 ? dateCmp : a.time.localeCompare(b.time);
+  });
 }

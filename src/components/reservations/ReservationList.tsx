@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Reservation, ReservationStatus } from '@/types/reservation';
 import { ReservationCard } from './ReservationCard';
-import { formatShortDate, isToday } from '@/lib/utils/date';
+import { formatShortDate, isToday, sortByDateTime } from '@/lib/utils/date';
 
 type StatusFilter = 'all' | 'confirmed' | 'pending';
 
@@ -24,7 +24,8 @@ export function ReservationList({
 }: ReservationListProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  const sorted = [...reservations].sort((a, b) => a.time.localeCompare(b.time));
+  // Sort by full datetime: date first, then time within the same date
+  const sorted = sortByDateTime(reservations);
   const visible =
     statusFilter === 'all' ? sorted : sorted.filter((r) => r.status === statusFilter);
 

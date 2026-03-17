@@ -47,14 +47,20 @@ export function ReservationCard({
       `}
     >
       {/* ── Collapsed row (always visible, ONE LINE) ── */}
+      {/*
+        items-start so that when showDate adds a second sub-line (date),
+        the time/dot/guests/badge all stay aligned to the FIRST text line
+        (the name) instead of being centred to the combined two-line height.
+        For single-line rows the result is visually identical to items-center.
+      */}
       <button
         onClick={handleRowClick}
         disabled={!hasSecondary}
-        className={`w-full flex items-center gap-2 sm:gap-3 px-4 py-3 text-left ${hasSecondary ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`w-full flex items-start gap-2 sm:gap-3 px-4 py-3 text-left ${hasSecondary ? 'cursor-pointer' : 'cursor-default'}`}
       >
-        {/* Status accent dot */}
+        {/* Status accent dot — mt-1 keeps it optically centred on the first text line */}
         <span
-          className={`shrink-0 w-2 h-2 rounded-full ${
+          className={`shrink-0 w-2 h-2 rounded-full mt-1 ${
             status === 'confirmed'
               ? 'bg-emerald-500'
               : status === 'pending'
