@@ -23,6 +23,12 @@
 /* ── Focus ring ──────────────────────────────────────────────────────────── */
 *:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
 
+/* ── Modal / bottom-sheet animation ─────────────────────────────────────── */
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 /* ── Base theme: light default, dark override ────────────────────────────── */
 html { color-scheme: light dark; }
 
