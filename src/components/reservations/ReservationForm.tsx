@@ -66,8 +66,8 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
             placeholder="Ej: Mesa García" className={INPUT_CLASS} autoComplete="off" />
         </Field>
 
-        {/* Date + Time */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Date + Time — single column on mobile, two columns on sm+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Fecha *">
             <input name="date" type="date" value={fields.date} onChange={handleChange} className={INPUT_CLASS} />
           </Field>
