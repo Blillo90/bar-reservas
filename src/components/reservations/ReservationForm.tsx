@@ -3,7 +3,6 @@
 import { useState, FormEvent } from 'react';
 import { CreateReservationInput, ReservationStatus } from '@/types/reservation';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { todayString } from '@/lib/utils/date';
 
 interface ReservationFormProps {
@@ -11,17 +10,13 @@ interface ReservationFormProps {
   onSubmit: (input: CreateReservationInput) => Promise<void>;
 }
 
-const EMPTY_FORM = {
-  name: '',
-  guests: '',
-  time: '',
-  date: '',
-  phone: '',
-  notes: '',
-};
+const EMPTY = { name: '', guests: '', time: '', date: '', phone: '', notes: '' };
+
+const INPUT_CLASS =
+  'w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
 
 export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps) {
-  const [fields, setFields] = useState({ ...EMPTY_FORM, date: defaultDate ?? todayString() });
+  const [fields, setFields] = useState({ ...EMPTY, date: defaultDate ?? todayString() });
   const [status, setStatus] = useState<ReservationStatus>('confirmed');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -35,7 +30,6 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const guests = parseInt(fields.guests, 10);
-
     if (!fields.name.trim()) { setError('El nombre es obligatorio.'); return; }
     if (!guests || guests < 1) { setError('Indica un número válido de personas.'); return; }
     if (!fields.time) { setError('La hora es obligatoria.'); return; }
@@ -52,7 +46,7 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
         notes: fields.notes.trim() || undefined,
         status,
       });
-      setFields({ ...EMPTY_FORM, date: fields.date });
+      setFields({ ...EMPTY, date: fields.date });
       setStatus('confirmed');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2500);
@@ -64,163 +58,101 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-amber-400" />
-          <h2 className="text-white font-semibold text-sm">Nueva Reserva</h2>
+    <div className="px-5 py-4">
+      <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+        {/* Name */}
+        <Field label="Nombre de la reserva *">
+          <input name="name" type="text" value={fields.name} onChange={handleChange}
+            placeholder="Ej: Mesa García" className={INPUT_CLASS} autoComplete="off" />
+        </Field>
+
+        {/* Date + Time */}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Fecha *">
+            <input name="date" type="date" value={fields.date} onChange={handleChange} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Hora *">
+            <input name="time" type="time" value={fields.time} onChange={handleChange} className={INPUT_CLASS} />
+          </Field>
         </div>
-      </CardHeader>
 
-      <CardBody>
-        <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-          {/* Name */}
-          <Field label="Nombre de la reserva *">
-            <input
-              name="name"
-              type="text"
-              value={fields.name}
-              onChange={handleChange}
-              placeholder="Ej: Mesa García"
-              className={INPUT_CLASS}
-              autoComplete="off"
+        {/* Guests */}
+        <Field label="Personas *">
+          <input name="guests" type="number" min={1} max={200} value={fields.guests}
+            onChange={handleChange} placeholder="4" className={INPUT_CLASS} />
+        </Field>
+
+        {/* Status selector */}
+        <Field label="Estado inicial">
+          <div className="grid grid-cols-2 gap-2">
+            <StatusToggle
+              active={status === 'confirmed'}
+              onClick={() => setStatus('confirmed')}
+              dot="bg-emerald-500"
+              activeClass="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              label="Confirmada"
             />
-          </Field>
-
-          {/* Date + Time row */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Fecha *">
-              <input
-                name="date"
-                type="date"
-                value={fields.date}
-                onChange={handleChange}
-                className={INPUT_CLASS}
-              />
-            </Field>
-            <Field label="Hora *">
-              <input
-                name="time"
-                type="time"
-                value={fields.time}
-                onChange={handleChange}
-                className={INPUT_CLASS}
-              />
-            </Field>
+            <StatusToggle
+              active={status === 'pending'}
+              onClick={() => setStatus('pending')}
+              dot="bg-amber-500"
+              activeClass="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              label="Pendiente"
+            />
           </div>
+        </Field>
 
-          {/* Guests */}
-          <Field label="Número de personas *">
-            <input
-              name="guests"
-              type="number"
-              min={1}
-              max={200}
-              value={fields.guests}
-              onChange={handleChange}
-              placeholder="4"
-              className={INPUT_CLASS}
-            />
-          </Field>
+        {/* Phone */}
+        <Field label="Teléfono">
+          <input name="phone" type="tel" value={fields.phone} onChange={handleChange}
+            placeholder="612 345 678" className={INPUT_CLASS} />
+        </Field>
 
-          {/* Status selector */}
-          <Field label="Estado inicial">
-            <div className="grid grid-cols-2 gap-2">
-              <StatusToggleBtn
-                active={status === 'confirmed'}
-                onClick={() => setStatus('confirmed')}
-                colorClass="border-emerald-500/50 bg-emerald-500/15 text-emerald-400"
-                inactiveClass="border-slate-600 bg-slate-900 text-slate-400 hover:border-slate-500"
-                dot="bg-emerald-500"
-                label="Confirmada"
-              />
-              <StatusToggleBtn
-                active={status === 'pending'}
-                onClick={() => setStatus('pending')}
-                colorClass="border-amber-500/50 bg-amber-500/15 text-amber-400"
-                inactiveClass="border-slate-600 bg-slate-900 text-slate-400 hover:border-slate-500"
-                dot="bg-amber-500"
-                label="Pendiente"
-              />
-            </div>
-          </Field>
+        {/* Notes */}
+        <Field label="Notas">
+          <textarea name="notes" value={fields.notes} onChange={handleChange}
+            placeholder="Alergias, preferencias, ocasión especial…" rows={2}
+            className={`${INPUT_CLASS} resize-none`} />
+        </Field>
 
-          {/* Phone (optional) */}
-          <Field label="Teléfono">
-            <input
-              name="phone"
-              type="tel"
-              value={fields.phone}
-              onChange={handleChange}
-              placeholder="612 345 678"
-              className={INPUT_CLASS}
-            />
-          </Field>
+        {error && (
+          <p className="text-rose-500 dark:text-rose-400 text-xs bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-emerald-600 dark:text-emerald-400 text-xs bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg px-3 py-2">
+            ✓ Reserva añadida correctamente
+          </p>
+        )}
 
-          {/* Notes (optional) */}
-          <Field label="Notas">
-            <textarea
-              name="notes"
-              value={fields.notes}
-              onChange={handleChange}
-              placeholder="Alergias, preferencias, ocasión especial…"
-              rows={2}
-              className={`${INPUT_CLASS} resize-none`}
-            />
-          </Field>
-
-          {/* Error */}
-          {error && (
-            <p className="text-rose-400 text-xs bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          {/* Success */}
-          {success && (
-            <p className="text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
-              ✓ Reserva añadida correctamente
-            </p>
-          )}
-
-          <Button type="submit" fullWidth size="lg" loading={loading}>
-            + Añadir Reserva
-          </Button>
-        </form>
-      </CardBody>
-    </Card>
+        <Button type="submit" fullWidth size="lg" loading={loading}>
+          + Añadir Reserva
+        </Button>
+      </form>
+    </div>
   );
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const INPUT_CLASS =
-  'w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-slate-400 text-xs font-medium mb-1">{label}</label>
+      <label className="block text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">{label}</label>
       {children}
     </div>
   );
 }
 
-interface StatusToggleBtnProps {
-  active: boolean;
-  onClick: () => void;
-  colorClass: string;
-  inactiveClass: string;
-  dot: string;
-  label: string;
-}
-
-function StatusToggleBtn({ active, onClick, colorClass, inactiveClass, dot, label }: StatusToggleBtnProps) {
+function StatusToggle({
+  active, onClick, dot, activeClass, label,
+}: {
+  active: boolean; onClick: () => void; dot: string; activeClass: string; label: string;
+}) {
+  const inactiveClass =
+    'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-500';
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${active ? colorClass : inactiveClass}`}
+    <button type="button" onClick={onClick}
+      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${active ? activeClass : inactiveClass}`}
     >
       <span className={`w-2 h-2 rounded-full ${dot} inline-block`} />
       {label}
