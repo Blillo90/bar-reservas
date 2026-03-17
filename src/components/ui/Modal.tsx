@@ -54,13 +54,14 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         aria-modal="true"
         aria-label={title}
         className="
-          relative z-10 w-full sm:max-w-lg
+          relative z-10 w-full min-w-0 sm:max-w-lg
           bg-white dark:bg-slate-800
           border-t border-slate-200 dark:border-slate-700
           sm:border sm:rounded-2xl
           rounded-t-2xl
           shadow-2xl
           max-h-[92vh] flex flex-col
+          overflow-x-hidden
           animate-[slideUp_0.22s_ease-out]
         "
         style={{ animationFillMode: 'both' }}
@@ -84,8 +85,8 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
           </button>
         </div>
 
-        {/* Scrollable content */}
-        <div className="overflow-y-auto flex-1">
+        {/* Scrollable content — min-w-0 prevents flex child from expanding beyond panel */}
+        <div className="overflow-y-auto flex-1 min-w-0">
           {children}
         </div>
       </div>

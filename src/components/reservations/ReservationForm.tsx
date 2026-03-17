@@ -12,8 +12,10 @@ interface ReservationFormProps {
 
 const EMPTY = { name: '', guests: '', time: '', date: '', phone: '', notes: '' };
 
+// min-w-0 overrides the UA stylesheet min-width on date/time inputs so they
+// respect w-full even on iOS Safari (which sets an intrinsic minimum width).
 const INPUT_CLASS =
-  'w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
+  'w-full min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
 
 export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps) {
   const [fields, setFields] = useState({ ...EMPTY, date: defaultDate ?? todayString() });
