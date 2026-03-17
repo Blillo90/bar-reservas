@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { CreateReservationInput } from '@/types/reservation';
+import { CreateReservationInput, ReservationStatus } from '@/types/reservation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { todayString } from '@/lib/utils/date';
@@ -22,6 +22,7 @@ const EMPTY_FORM = {
 
 export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps) {
   const [fields, setFields] = useState({ ...EMPTY_FORM, date: defaultDate ?? todayString() });
+  const [status, setStatus] = useState<ReservationStatus>('confirmed');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -49,9 +50,10 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
         date: fields.date,
         phone: fields.phone.trim() || undefined,
         notes: fields.notes.trim() || undefined,
-        status: 'confirmed',
+        status,
       });
       setFields({ ...EMPTY_FORM, date: fields.date });
+      setStatus('confirmed');
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2500);
     } catch {
@@ -121,6 +123,28 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
             />
           </Field>
 
+          {/* Status selector */}
+          <Field label="Estado inicial">
+            <div className="grid grid-cols-2 gap-2">
+              <StatusToggleBtn
+                active={status === 'confirmed'}
+                onClick={() => setStatus('confirmed')}
+                colorClass="border-emerald-500/50 bg-emerald-500/15 text-emerald-400"
+                inactiveClass="border-slate-600 bg-slate-900 text-slate-400 hover:border-slate-500"
+                dot="bg-emerald-500"
+                label="Confirmada"
+              />
+              <StatusToggleBtn
+                active={status === 'pending'}
+                onClick={() => setStatus('pending')}
+                colorClass="border-amber-500/50 bg-amber-500/15 text-amber-400"
+                inactiveClass="border-slate-600 bg-slate-900 text-slate-400 hover:border-slate-500"
+                dot="bg-amber-500"
+                label="Pendiente"
+              />
+            </div>
+          </Field>
+
           {/* Phone (optional) */}
           <Field label="Teléfono">
             <input
@@ -159,12 +183,7 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
             </p>
           )}
 
-          <Button
-            type="submit"
-            fullWidth
-            size="lg"
-            loading={loading}
-          >
+          <Button type="submit" fullWidth size="lg" loading={loading}>
             + Añadir Reserva
           </Button>
         </form>
@@ -172,6 +191,8 @@ export function ReservationForm({ defaultDate, onSubmit }: ReservationFormProps)
     </Card>
   );
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const INPUT_CLASS =
   'w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors';
@@ -182,5 +203,27 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="block text-slate-400 text-xs font-medium mb-1">{label}</label>
       {children}
     </div>
+  );
+}
+
+interface StatusToggleBtnProps {
+  active: boolean;
+  onClick: () => void;
+  colorClass: string;
+  inactiveClass: string;
+  dot: string;
+  label: string;
+}
+
+function StatusToggleBtn({ active, onClick, colorClass, inactiveClass, dot, label }: StatusToggleBtnProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${active ? colorClass : inactiveClass}`}
+    >
+      <span className={`w-2 h-2 rounded-full ${dot} inline-block`} />
+      {label}
+    </button>
   );
 }

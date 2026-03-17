@@ -19,6 +19,7 @@ export function DashboardView() {
     selectDate,
     toggleShowAll,
     addReservation,
+    updateStatus,
     cancelReservation,
   } = useReservations();
 
@@ -39,32 +40,28 @@ export function DashboardView() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* ── LEFT COLUMN (2/3) ── */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Calendar */}
               <ReservationCalendar
                 reservations={allReservations}
                 selectedDate={selectedDate}
                 onSelectDate={selectDate}
               />
 
-              {/* Reservation list */}
               <ReservationList
                 reservations={filteredReservations}
                 selectedDate={selectedDate}
                 showAll={showAll}
                 onToggleView={toggleShowAll}
+                onUpdateStatus={updateStatus}
                 onCancel={cancelReservation}
               />
             </div>
 
             {/* ── RIGHT COLUMN (1/3) ── */}
             <div className="space-y-6">
-              {/* Summary */}
               <SummaryPanel summary={summary} dateLabel={summaryDateLabel} />
 
-              {/* Quick stats — total across all dates */}
               <AllTimeStats reservations={allReservations} />
 
-              {/* New reservation form */}
               <ReservationForm
                 defaultDate={selectedDate}
                 onSubmit={addReservation}
@@ -79,21 +76,41 @@ export function DashboardView() {
 
 function AllTimeStats({ reservations }: { reservations: { guests: number; status: string }[] }) {
   const active = reservations.filter((r) => r.status !== 'cancelled');
+  const confirmed = active.filter((r) => r.status === 'confirmed');
+  const pending = active.filter((r) => r.status === 'pending');
   const totalGuests = active.reduce((s, r) => s + r.guests, 0);
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      <StatCard label="Reservas totales" value={active.length} icon="📋" />
+      <StatCard label="Reservas activas" value={active.length} icon="📋" />
       <StatCard label="Personas totales" value={totalGuests} icon="👥" />
+      <StatCard label="Confirmadas" value={confirmed.length} icon="✓" accent="emerald" />
+      <StatCard label="Pendientes" value={pending.length} icon="⏳" accent={pending.length > 0 ? 'amber' : undefined} />
     </div>
   );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: number;
+  icon: string;
+  accent?: 'emerald' | 'amber';
+}) {
+  const valueColor = accent === 'emerald'
+    ? 'text-emerald-400'
+    : accent === 'amber'
+    ? 'text-amber-400'
+    : 'text-amber-400';
+
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 text-center">
-      <span className="text-2xl">{icon}</span>
-      <p className="text-2xl font-bold text-amber-400 mt-1">{value}</p>
+      <span className="text-xl">{icon}</span>
+      <p className={`text-2xl font-bold mt-1 ${valueColor}`}>{value}</p>
       <p className="text-slate-400 text-xs mt-0.5">{label}</p>
     </div>
   );

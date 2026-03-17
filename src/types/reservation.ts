@@ -30,6 +30,8 @@ export interface ReservationSummary {
   total: number;
   totalGuests: number;
   confirmed: number;
+  confirmedGuests: number;
   pending: number;
+  pendingGuests: number;
   cancelled: number;
 }
