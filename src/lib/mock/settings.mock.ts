@@ -1,12 +1,7 @@
 /**
  * Mock settings repository backed by localStorage.
- *
- * Drop-in replacement path:
- *   import { supabaseSettingsService } from './supabase-settings';
- *   export const barSettingsService = supabaseSettingsService;
- *
- * The interface IBarSettingsService in src/lib/api/settings.ts defines the
- * contract — swap the implementation without touching any consumer.
+ * No longer the active service — kept for fallback/testing purposes.
+ * Active service: src/lib/supabase/settings.service.ts
  */
 
 import { BarSettings, UpdateBarSettingsInput } from '@/types/settings';
@@ -14,14 +9,26 @@ import { BarSettings, UpdateBarSettingsInput } from '@/types/settings';
 const STORAGE_KEY = 'bar-settings';
 
 const DEFAULT_SETTINGS: BarSettings = {
+  id: 1,
   businessName: 'Bar Reservas',
   businessPhone: '',
+  address: undefined,
+  email: undefined,
   openingTime: '13:00',
   closingTime: '23:30',
   reservationInterval: 30,
-  defaultReservationStatus: 'confirmed',
   maxCapacity: 60,
-  themePreference: 'system',
+  maxGuestsPerReservation: 20,
+  openMonday: true,
+  openTuesday: true,
+  openWednesday: true,
+  openThursday: true,
+  openFriday: true,
+  openSaturday: true,
+  openSunday: false,
+  defaultReservationStatus: 'confirmed',
+  themePreference: 'dark',
+  updatedAt: new Date().toISOString(),
 };
 
 function load(): BarSettings {
@@ -49,13 +56,8 @@ export const mockBarSettingsService = {
 
   async update(input: UpdateBarSettingsInput): Promise<BarSettings> {
     const current = load();
-    const updated: BarSettings = { ...current, ...input };
+    const updated: BarSettings = { ...current, ...input, updatedAt: new Date().toISOString() };
     save(updated);
     return updated;
-  },
-
-  async reset(): Promise<BarSettings> {
-    save({ ...DEFAULT_SETTINGS });
-    return { ...DEFAULT_SETTINGS };
   },
 };
