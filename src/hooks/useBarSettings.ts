@@ -7,19 +7,21 @@ import { barSettingsService } from '@/lib/api/settings';
 interface UseBarSettingsReturn {
   settings: BarSettings | null;
   isLoading: boolean;
+  error: string | null;
   updateSettings: (input: UpdateBarSettingsInput) => Promise<void>;
-  resetSettings: () => Promise<void>;
 }
 
 export function useBarSettings(): UseBarSettingsReturn {
   const [settings, setSettings] = useState<BarSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    barSettingsService.get().then((s) => {
-      setSettings(s);
-      setIsLoading(false);
-    });
+    barSettingsService
+      .get()
+      .then(setSettings)
+      .catch((e) => setError(e.message))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const updateSettings = useCallback(async (input: UpdateBarSettingsInput) => {
@@ -27,10 +29,5 @@ export function useBarSettings(): UseBarSettingsReturn {
     setSettings(updated);
   }, []);
 
-  const resetSettings = useCallback(async () => {
-    const defaults = await barSettingsService.reset();
-    setSettings(defaults);
-  }, []);
-
-  return { settings, isLoading, updateSettings, resetSettings };
+  return { settings, isLoading, error, updateSettings };
 }

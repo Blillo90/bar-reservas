@@ -2,16 +2,23 @@
 
 export type ReservationStatus = 'confirmed' | 'pending' | 'cancelled';
 
+export type ReservationSource = 'manual' | 'web' | 'instagram' | 'whatsapp';
+
 export interface Reservation {
   id: string;
+  reservationCode: string;
   name: string;
   guests: number;
-  time: string;   // "HH:MM" 24h format
-  date: string;   // "YYYY-MM-DD"
+  time: string;        // "HH:MM" 24h format
+  date: string;        // "YYYY-MM-DD"
   status: ReservationStatus;
+  source: ReservationSource;
   notes?: string;
   phone?: string;
-  createdAt: string; // ISO string
+  createdAt: string;   // ISO string
+  updatedAt: string;   // ISO string
+  confirmedAt?: string | null;
+  cancelledAt?: string | null;
 }
 
 export type CreateReservationInput = {
@@ -20,6 +27,7 @@ export type CreateReservationInput = {
   time: string;
   date: string;
   status?: ReservationStatus;
+  source?: ReservationSource;
   notes?: string;
   phone?: string;
 };

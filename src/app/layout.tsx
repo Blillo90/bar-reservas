@@ -7,22 +7,16 @@ export const metadata: Metadata = {
 };
 
 /**
- * Inline script injected before hydration to avoid flash of wrong theme.
- * Reads localStorage first, then falls back to system preference.
+ * Apply dark theme immediately before hydration to avoid flash.
+ * The actual theme value is read from bar_settings (Supabase) once the app loads.
+ * Dark is the default while settings are being fetched.
  */
-const THEME_SCRIPT = `
-try {
-  var t = localStorage.getItem('bar-theme');
-  var dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  if (dark) document.documentElement.classList.add('dark');
-} catch(e) {}
-`;
+const THEME_SCRIPT = `document.documentElement.classList.add('dark');`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* Must run before body renders to prevent FOUC */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>{children}</body>

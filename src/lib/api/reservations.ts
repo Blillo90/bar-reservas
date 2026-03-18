@@ -12,7 +12,7 @@
  */
 
 import { Reservation, CreateReservationInput, UpdateReservationInput } from '@/types/reservation';
-import { mockReservationService } from '@/lib/mock/reservations.mock';
+import { supabaseReservationService } from '@/lib/supabase/reservations.service';
 
 export interface IReservationService {
   getAll(): Promise<Reservation[]>;
@@ -25,4 +25,4 @@ export interface IReservationService {
 }
 
 // Active service — replace this line to switch backend
-export const reservationService: IReservationService = mockReservationService;
+export const reservationService: IReservationService = supabaseReservationService;

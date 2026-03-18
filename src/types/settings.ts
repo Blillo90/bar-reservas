@@ -1,27 +1,30 @@
-// Bar settings domain types
+// Bar settings — mirrors the bar_settings table (single-row config)
 
 export type ReservationInterval = 15 | 30 | 60;
 export type DefaultReservationStatus = 'confirmed' | 'pending';
-export type ThemePreference = 'light' | 'dark' | 'system';
+export type ThemePreference = 'light' | 'dark';
 
 export interface BarSettings {
-  // Bar identity
+  id: number;
   businessName: string;
-  businessPhone: string;
-
-  // Schedule
-  openingTime: string;   // "HH:MM" 24h
-  closingTime: string;   // "HH:MM" 24h
-  reservationInterval: ReservationInterval; // minutes between available slots
-
-  // Reservations
+  address?: string;
+  businessPhone?: string;
+  email?: string;
+  maxCapacity: number;
+  maxGuestsPerReservation: number;
+  openingTime: string;          // "HH:MM" 24h
+  closingTime: string;          // "HH:MM" 24h
+  reservationInterval: number;  // minutes between available slots
+  openMonday: boolean;
+  openTuesday: boolean;
+  openWednesday: boolean;
+  openThursday: boolean;
+  openFriday: boolean;
+  openSaturday: boolean;
+  openSunday: boolean;
   defaultReservationStatus: DefaultReservationStatus;
-
-  // Capacity
-  maxCapacity: number; // total guests at any given time
-
-  // Appearance
   themePreference: ThemePreference;
+  updatedAt: string;
 }
 
-export type UpdateBarSettingsInput = Partial<BarSettings>;
+export type UpdateBarSettingsInput = Partial<Omit<BarSettings, 'id' | 'updatedAt'>>;

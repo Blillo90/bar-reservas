@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { BarSettings, ReservationInterval, DefaultReservationStatus, ThemePreference } from '@/types/settings';
+import { BarSettings, UpdateBarSettingsInput, ReservationInterval, DefaultReservationStatus } from '@/types/settings';
 import { Modal } from '@/components/ui/Modal';
 
 // ── Shared input styles (mirrors ReservationForm) ─────────────────────────────
@@ -17,21 +17,12 @@ interface SettingsModalProps {
   open: boolean;
   onClose: () => void;
   settings: BarSettings;
-  onSave: (updated: Partial<BarSettings>) => Promise<void>;
-  isDark: boolean;
-  onToggleTheme: () => void;
+  onSave: (updated: UpdateBarSettingsInput) => Promise<void>;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function SettingsModal({
-  open,
-  onClose,
-  settings,
-  onSave,
-  isDark,
-  onToggleTheme,
-}: SettingsModalProps) {
+export function SettingsModal({ open, onClose, settings, onSave }: SettingsModalProps) {
   const [form, setForm] = useState<BarSettings>(settings);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -84,7 +75,7 @@ export function SettingsModal({
             <input
               name="businessPhone"
               type="tel"
-              value={form.businessPhone}
+              value={form.businessPhone ?? ''}
               onChange={handleChange}
               placeholder="612 345 678"
               className={INPUT_CLASS}
@@ -181,9 +172,17 @@ export function SettingsModal({
           <Field label="Modo de color">
             <div className="flex items-center justify-between py-1">
               <span className="text-sm text-slate-700 dark:text-slate-300">
-                {isDark ? 'Modo oscuro activo' : 'Modo claro activo'}
+                {form.themePreference === 'dark' ? 'Modo oscuro activo' : 'Modo claro activo'}
               </span>
-              <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} />
+              <ThemeToggleButton
+                isDark={form.themePreference === 'dark'}
+                onToggle={() =>
+                  setForm((p) => ({
+                    ...p,
+                    themePreference: p.themePreference === 'dark' ? 'light' : 'dark',
+                  }))
+                }
+              />
             </div>
           </Field>
         </Section>

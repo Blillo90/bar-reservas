@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useReservations } from '@/hooks/useReservations';
-import { useTheme } from '@/hooks/useTheme';
 import { useBarSettings } from '@/hooks/useBarSettings';
 import { Header } from './Header';
 import { SummaryPanel } from './SummaryPanel';
@@ -14,11 +13,17 @@ import { SettingsModal } from '@/components/settings/SettingsModal';
 import { formatShortDate, isToday } from '@/lib/utils/date';
 
 export function DashboardView() {
-  const { isDark, toggle: toggleTheme } = useTheme();
   const { settings, updateSettings } = useBarSettings();
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false); // mobile collapsible
+
+  // Apply theme from settings; default to 'dark' while loading
+  useEffect(() => {
+    const theme = settings?.themePreference ?? 'dark';
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+  }, [settings?.themePreference]);
 
   const {
     allReservations,
@@ -49,9 +54,7 @@ export function DashboardView() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       <Header
         selectedDate={selectedDate}
-        isDark={isDark}
         businessName={settings?.businessName}
-        onToggleTheme={toggleTheme}
         onAddReservation={() => setAddOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
@@ -142,7 +145,7 @@ export function DashboardView() {
         </svg>
       </button>
 
-      {/* ── New reservation modal (mobile sheet + desktop dialog) ── */}
+      {/* ── New reservation modal ── */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Nueva Reserva">
         <ReservationForm
           defaultDate={selectedDate}
@@ -158,8 +161,6 @@ export function DashboardView() {
           onClose={() => setSettingsOpen(false)}
           settings={settings}
           onSave={updateSettings}
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
         />
       )}
     </div>
